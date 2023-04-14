@@ -3,6 +3,16 @@
 
 Spring Security, JWT, Redis를 사용하여 인증서버 구축
 
+* Redis
+https://github.com/shmin7777/Spring-Redis    
+
+* JWT
+https://github.com/shmin7777/spring-jwt  
+
+* Security
+https://github.com/shmin7777/spring-security  
+
+
 
 ## 동작방식  
 `SecurityConfig.class` : formLogin, httpBasic disable, session 사용 안함, `JwtAuthorizationFilter` 등록, cors 허용 
