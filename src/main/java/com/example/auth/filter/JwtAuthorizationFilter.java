@@ -20,16 +20,26 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class JwtAuthorizationFilter extends OncePerRequestFilter {
     private final JwtProvider jwtProvider;
-    
+
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
             FilterChain filterChain) throws ServletException, IOException {
         // TODO Auto-generated method stub
         log.info("OncePerRequestFilter in!!");
         String accessToken = resolveToken(request);
-        
+
         // 정상 토큰인지 검사
-        // if(accessToken !=null && jwtPro)
+        try {
+            if (accessToken != null && jwtProvider.validationAccessToken(accessToken)) {
+                log.info("정상적인 토큰입니다!!");
+            }
+
+        } catch (Exception e) {
+            log.error("잘못된 토큰입니다 :: {} ", e);
+            response.sendError(403);
+        }
+
+        filterChain.doFilter(request, response);
 
     }
 

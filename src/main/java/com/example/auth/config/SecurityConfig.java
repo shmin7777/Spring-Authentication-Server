@@ -40,7 +40,6 @@ public class SecurityConfig {
                 .httpBasic().disable() // Basic 기반(username, password) 로그인 사용 안함
                 .formLogin().disable() // form 기반 로그인 사용 안함
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS) // 세션 사용
-                                                                                            // 안함
                 .and()
                 .addFilterBefore(new JwtAuthorizationFilter(jwtProvider),
                         UsernamePasswordAuthenticationFilter.class)

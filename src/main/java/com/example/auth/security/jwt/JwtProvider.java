@@ -17,16 +17,16 @@ import lombok.extern.slf4j.Slf4j;
 @Component
 public class JwtProvider {
 
+    /**
+     * secret key hashing
+     * @return
+     */
     private Key getSigninKey() {
         byte[] keyBytes = JwtProperties.SECRET.getBytes(StandardCharsets.UTF_8);
         return Keys.hmacShaKeyFor(keyBytes);
     }
 
-    public TokenDto generateToken(Authentication authentication) {
-        log.info(authentication.getPrincipal().toString());
-        PrincipalDetails principalDetails = (PrincipalDetails) authentication.getPrincipal();
-        String email = principalDetails.getUsername();
-        String authorities = principalDetails.getUser().getRole().getKey();
+    public TokenDto createToken(String email, String authorities) {
         long now = System.currentTimeMillis();
 
         String accessToken = Jwts.builder()
@@ -54,6 +54,12 @@ public class JwtProvider {
         return new TokenDto(accessToken, refreshToken);
     }
 
+    /**
+     * accessToken validation
+     * 파싱 및 검증 , 실패 시 error
+     * @param accessToken
+     * @return
+     */
     public boolean validationAccessToken(String accessToken) {
         try {
             Jwts.parserBuilder()
