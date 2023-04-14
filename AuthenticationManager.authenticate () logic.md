@@ -1,3 +1,6 @@
+![image](https://user-images.githubusercontent.com/67637716/231922556-49b5248e-38c6-4c2a-9606-2585c9e6b0e3.png)  
+
+
 ``` java
  AuthenticationManager authenticationManager = authenticationManagerBuilder.getObject();
  Authentication authenticate = authenticationManager.authenticate(authenticationToken);
