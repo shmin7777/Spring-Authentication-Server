@@ -9,10 +9,8 @@ logging:
       max-history: 7
   level:
     root: INFO
-    com.example.auth:  DEBUG
+#    com.example.auth:  DEBUG
   pattern:
-    #console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level [%X{GLOBALID}-%X{BRANCHID}] %logger{36} [%4L] - %m%n"
-    #file: "[%d{HH:mm:ss.SSS}][%-5level][%t][%X{GLOBALID}-%X{BRANCHID}][%logger.%method:line%line] - %msg%n"
     console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} [%4L] - %m%n"
     file: "[%d{HH:mm:ss.SSS}][%-5level][%t] %logger.%method:line%line] - %msg%n"
 
