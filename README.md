@@ -2,3 +2,40 @@
 ![image](https://user-images.githubusercontent.com/67637716/231922596-ba2d907f-feca-4ccd-990b-c54046f1e903.png)  
 
 Spring Security, JWT, Redis를 사용하여 인증서버 구축
+
+
+## 동작방식  
+`SecurityConfig.class` : formLogin, httpBasic disable, session 사용 안함, `JwtAuthorizationFilter` 등록, cors 허용 
+
+`/api/mypage/**` : 인증 필요
+`/api/admin/**` : ROLE_ADMIN 권한만 인증됨  
+
+Redis에 RefreshToken 저장. RefreshToken은 항상 AccessToken보다 만료시간 김.  
+
+
+* /login 
+UsernamePasswordAuthenticationToken을 만들어 AuthenticationManager.authentication()으로 인증.  
+인증 후 JWT 토큰을 만들고 토큰 return.  
+Redis에 RefreshToken 저장.  
+header에 `AUTHORIZATION` : accessToken, Cookie : refresh token return.   
+
+* /check/acess-token : AT validation  
+accessToken이 유효한지 확인 후 정상이면 200, 아니면 401 return
+
+* /reissue : 토큰 재발급
+ 401을 반환받았다면 AT, RT를 요청으로 받아 재발급을한다.  
+ Redis에 RT가 없거나 유효성 검사 후 재로그인 요청  
+ Validation 통과 -> Redis에서 RT update.  
+ AT, RT return.  
+ 
+ * /logout
+Redis에있는 RT 삭제.  
+쿠키 삭제.  
+
+
+
+
+
+
+
+
