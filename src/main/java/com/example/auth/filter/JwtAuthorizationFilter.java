@@ -33,6 +33,7 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
 
         try { // 정상 토큰인지 검사
             if (accessToken != null && jwtProvider.validationToken(accessToken)) {
+                // 여기서 권한을 넣어줘야 Spring security가 권한 관리를 할 수 있다.
                 Authentication authentication = jwtProvider.getAuthentication(accessToken);
                 SecurityContextHolder.getContext().setAuthentication(authentication);
                 log.debug("Save authentication in SecurityContextHolder.");
