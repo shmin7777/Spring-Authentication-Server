@@ -42,6 +42,11 @@ accessToken이 유효한지 확인 후 정상이면 200, 아니면 401 return
 Redis에있는 RT 삭제.  
 쿠키 삭제.  
 
+* JwtAuthorizationFilter 
+권한 인증 필터  
+OncePerRequestFilter : 한 요청에 대해 딱 한번만 적용되는 것을 보장하는 필터 여러 필터를 거치는 도중 redirect를 시킬 경우 다시 처음부터 필터를 거쳐야되는데, OncePerRequestFilter는 한번만 실행되기 때문에 여러번의 인증을 막을 수 있음  
+
+![image](https://user-images.githubusercontent.com/67637716/232114096-15cd0fe2-51e1-45e5-8467-004d51244294.png)  
 
 
 
