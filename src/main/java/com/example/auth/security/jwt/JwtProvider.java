@@ -155,9 +155,14 @@ public class JwtProvider {
      * @return
      */
     private Claims getClaims(String token) {
-        return Jwts.parserBuilder().setSigningKey(getSigninKey()).build()
-                .parseClaimsJws(token)
-                .getBody();
+        try {
+            return Jwts.parserBuilder().setSigningKey(getSigninKey()).build()
+                    .parseClaimsJws(token)
+                    .getBody();
+        } catch (ExpiredJwtException e) {
+            // 만료되어도 claim return
+            return e.getClaims();
+        }
     }
 
     /**

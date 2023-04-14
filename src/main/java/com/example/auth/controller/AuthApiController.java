@@ -111,7 +111,7 @@ public class AuthApiController {
                     .path("/") // 모든 경로에 cookie를 사용하게 함
                     .build();
 
-            return ResponseEntity.ok()
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .header(HttpHeaders.SET_COOKIE, httpCookie.toString())
                     .build();
         }
