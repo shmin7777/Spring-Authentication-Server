@@ -31,8 +31,6 @@ public class PrincipalDetails implements UserDetails {
     }
 
 
-    // == 세부 설정 == //
-
     @Override
     public boolean isAccountNonExpired() { // 계정의 만료 여부
         return true;

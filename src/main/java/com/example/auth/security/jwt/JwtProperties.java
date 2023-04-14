@@ -14,9 +14,13 @@ public class JwtProperties {
 
     public static final int COOKIE_TTL = (1000 * 60) * 60 * 24; // 1일
     public static final long ACCESS_TOKEN_TTL = (1000 * 60) * 30; // 30분
-    public static final long REFRESH_TOKEN_TTL = (60 * 1000) * 60 * 24 * 7; // 7일
+    // public static final long REFRESH_TOKEN_TTL = (60 * 1000) * 60 * 24 * 7; // 7일
+    public static final long REFRESH_TOKEN_TTL = (5 * 1000); // 7일
 
     public static final String RT = "Refresh-token: ";
+    
+    // logout
+    public static final String LOGOUT = "logout";
 
 
 

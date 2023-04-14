@@ -1,6 +1,8 @@
 package com.example.auth.service;
 
 import java.util.stream.Collectors;
+import javax.servlet.http.HttpServletRequest;
+import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -17,6 +19,7 @@ import com.example.auth.domain.entity.User;
 import com.example.auth.repository.UserRepository;
 import com.example.auth.security.jwt.JwtProperties;
 import com.example.auth.security.jwt.JwtProvider;
+import com.example.auth.security.jwt.JwtUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -63,6 +66,13 @@ public class UserService {
         return generateToken(email, authorities);
     }
 
+    /**
+     * Redis에서 RT가 있다면 DELETE, Token create & Redis에 RT 저장
+     * 
+     * @param email
+     * @param authorities
+     * @return
+     */
     private TokenDto generateToken(String email, String authorities) {
         // RT가 이미 있을 경우
         if (redisService.getValues(JwtProperties.RT + email) != null) {
@@ -70,7 +80,7 @@ public class UserService {
         }
 
         TokenDto tokenDto = jwtProvider.createToken(email, authorities);
-        saveRefreshToken(tokenDto.getRefreshToken());
+        saveRefreshToken(email, tokenDto.getRefreshToken());
         return tokenDto;
     }
 
@@ -80,8 +90,9 @@ public class UserService {
      * @param refreshToken
      */
     @Transactional
-    private void saveRefreshToken(String refreshToken) {
-
+    private void saveRefreshToken(String principal, String refreshToken) {
+        redisService.setValuesWithTimeout(JwtProperties.RT + principal, refreshToken,
+                JwtProperties.REFRESH_TOKEN_TTL);
     }
 
     /**
@@ -95,5 +106,58 @@ public class UserService {
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.joining(","));
     }
+
+    /**
+     * logout
+     * 
+     * @param accessToken
+     */
+    public void logout(String accessToken) {
+        accessToken = JwtUtils.resolveToken(accessToken);
+        String principal = jwtProvider.getAuthentication(accessToken).getName();
+
+        // Redis에 저장되어있는 RT 삭제
+        if (redisService.getValues(JwtProperties.RT + principal) != null) {
+            redisService.deleteValue(JwtProperties.RT + principal);
+        }
+
+    }
+
+
+
+    /**
+     * token 재발급
+     * 
+     * @param accessToken
+     * @param refreshToken
+     * @return
+     */
+    public TokenDto reissue(String accessToken, String refreshToken) {
+        accessToken = JwtUtils.resolveToken(accessToken);
+        Authentication authentication = jwtProvider.getAuthentication(accessToken);
+        String principal = authentication.getName();
+
+        String refreshTokenInRedis = redisService.getValues(JwtProperties.RT + principal);
+        if (refreshTokenInRedis == null) {
+            // Redis에 RT가 없는 경우 -> 재로그인 요청
+            return null;
+        }
+
+        // RT의 유효성 검사 & Redis에 저장된 RT와 같은지 비교
+        // 같지 않다면 삭제, 재로그인 요청
+        if (!jwtProvider.validationToken(refreshTokenInRedis)
+                || !refreshTokenInRedis.equals(refreshToken)) {
+            redisService.deleteValue(JwtProperties.RT + principal);
+            return null;
+        }
+
+
+        // 토큰 재발급 및 Redis 업데이트
+        redisService.deleteValue(JwtProperties.RT + principal);
+        TokenDto tokenDto = jwtProvider.createToken(principal, getAuthorities(authentication));
+        saveRefreshToken(principal, tokenDto.getRefreshToken());
+        return tokenDto;
+    }
+
 
 }

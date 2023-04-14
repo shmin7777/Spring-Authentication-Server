@@ -6,9 +6,13 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.springframework.http.HttpHeaders;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.filter.OncePerRequestFilter;
 import com.example.auth.security.jwt.JwtProperties;
 import com.example.auth.security.jwt.JwtProvider;
+import io.jsonwebtoken.IncorrectClaimException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -24,20 +28,25 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
             FilterChain filterChain) throws ServletException, IOException {
-        // TODO Auto-generated method stub
         log.info("OncePerRequestFilter in!!");
         String accessToken = resolveToken(request);
 
-        // 정상 토큰인지 검사
-        try {
-            if (accessToken != null && jwtProvider.validationAccessToken(accessToken)) {
-                log.info("정상적인 토큰입니다!!");
+        try { // 정상 토큰인지 검사
+            if (accessToken != null && jwtProvider.validationToken(accessToken)) {
+                Authentication authentication = jwtProvider.getAuthentication(accessToken);
+                SecurityContextHolder.getContext().setAuthentication(authentication);
+                log.debug("Save authentication in SecurityContextHolder.");
             }
-
-        } catch (Exception e) {
-            log.error("잘못된 토큰입니다 :: {} ", e);
+        } catch (IncorrectClaimException e) { // 잘못된 토큰일 경우
+            SecurityContextHolder.clearContext();
+            log.debug("Invalid JWT token.");
+            response.sendError(403);
+        } catch (UsernameNotFoundException e) { // 회원을 찾을 수 없을 경우
+            SecurityContextHolder.clearContext();
+            log.debug("Can't find user.");
             response.sendError(403);
         }
+
 
         filterChain.doFilter(request, response);
 
