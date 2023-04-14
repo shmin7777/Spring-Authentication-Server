@@ -5,7 +5,10 @@ import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import org.springframework.http.HttpHeaders;
 import org.springframework.web.filter.OncePerRequestFilter;
+import com.example.auth.security.jwt.JwtProperties;
+import com.example.auth.security.jwt.JwtProvider;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -16,12 +19,26 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @RequiredArgsConstructor
 public class JwtAuthorizationFilter extends OncePerRequestFilter {
+    private final JwtProvider jwtProvider;
+    
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
             FilterChain filterChain) throws ServletException, IOException {
         // TODO Auto-generated method stub
         log.info("OncePerRequestFilter in!!");
-        filterChain.doFilter(request, response);
+        String accessToken = resolveToken(request);
+        
+        // 정상 토큰인지 검사
+        // if(accessToken !=null && jwtPro)
+
     }
 
+    // HTTP Request 헤더로부터 토큰 추출
+    public String resolveToken(HttpServletRequest httpServletRequest) {
+        String bearerToken = httpServletRequest.getHeader(HttpHeaders.AUTHORIZATION);
+        if (bearerToken != null && bearerToken.startsWith(JwtProperties.BEARER_PREFIX)) {
+            return bearerToken.substring(7);
+        }
+        return null;
+    }
 }

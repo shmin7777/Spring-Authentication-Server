@@ -12,6 +12,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import com.example.auth.filter.JwtAuthorizationFilter;
+import com.example.auth.security.jwt.JwtProvider;
 import lombok.RequiredArgsConstructor;
 
 @Configuration
@@ -19,6 +20,7 @@ import lombok.RequiredArgsConstructor;
 @EnableGlobalMethodSecurity(securedEnabled = true) // @Secured 활성화
 @RequiredArgsConstructor
 public class SecurityConfig {
+    private final JwtProvider jwtProvider;
 
     @Bean
     public BCryptPasswordEncoder bCryptPasswordEncoder() {
@@ -40,7 +42,7 @@ public class SecurityConfig {
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS) // 세션 사용
                                                                                             // 안함
                 .and()
-                .addFilterBefore(new JwtAuthorizationFilter(),
+                .addFilterBefore(new JwtAuthorizationFilter(jwtProvider),
                         UsernamePasswordAuthenticationFilter.class)
                 .authorizeRequests()
                 .antMatchers("/api/mypage/**").authenticated() // 마이페이지 인증 필요
